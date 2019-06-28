@@ -49,6 +49,36 @@ contract("WBI", accounts => {
       assert.equal(drBytes2, readDrBytes2)
     })
 
+    it("should upgrade the reward of the data request in the contract", async () => {     
+      const drBytes = web3.utils.fromAscii("This is a DR")
+      const half_ether = web3.utils.toWei("0.5", "ether")
+      // one ether to the dr reward
+      const tx1 = wbiInstance.post_dr(drBytes, half_ether, {
+        from: accounts[0],
+        value: web3.utils.toWei("1", "ether"),
+      })
+      const txHash1 = await waitForHash(tx1)
+      let txReceipt1 = await web3.eth.getTransactionReceipt(txHash1)
+      const id1 = txReceipt1.logs[0].data
+
+      let contractBalanceBefore = await web3.eth.getBalance(
+        wbiInstance.address
+      )
+      assert.equal(web3.utils.toWei("1", "ether"), contractBalanceBefore)
+
+      const tx2 = wbiInstance.upgrade_dr(id1, half_ether, {
+        from: accounts[0],
+        value: web3.utils.toWei("1", "ether"),
+      })
+      await waitForHash(tx2)
+
+      let contractBalanceAfter = await web3.eth.getBalance(
+        wbiInstance.address
+      )
+
+      assert.equal(web3.utils.toWei("2", "ether"), contractBalanceAfter)
+    })
+
     it("should allow post and read result", async () => {
       var account1 = accounts[0]
       var account2 = accounts[1]
