@@ -55,21 +55,22 @@ contract WitnetBridgeInterface {
 
   // @dev Claim drs to be posted to Witnet by the node
   /// @param ids Data request ids to be claimed
-  /// @param PoE PoE claiming eligibility
-  function claim_drs(uint256[] memory ids, bytes memory PoE) public {
+  /// @param poe PoE claiming eligibility
+  function claim_drs(uint256[] memory ids, bytes memory poe) public {
     uint256 current_epoch = block.number;
-    // PoE pleaseee
-    uint256 index;
-    for (uint i = 0; i < ids.length; i++) {
-      index = ids[i];
-      if((requests[index].timestamp == 0 || current_epoch-requests[index].timestamp > 13) &&
-      requests[index].dr_hash==0 &&
-      requests[index].result.length==0){
-        requests[index].pkh_claim = msg.sender;
-        requests[index].timestamp = current_epoch;
-      }
-      else{
-        revert("One of the DR was already claimed. Espabila");
+    if(verify_poe(poe)){
+      uint256 index;
+      for (uint i = 0; i < ids.length; i++) {
+        index = ids[i];
+        if((requests[index].timestamp == 0 || current_epoch-requests[index].timestamp > 13) &&
+        requests[index].dr_hash==0 &&
+        requests[index].result.length==0){
+          requests[index].pkh_claim = msg.sender;
+           requests[index].timestamp = current_epoch;
+        }
+        else{
+          revert("One of the DR was already claimed. Espabila");
+        }
       }
     }
   }
@@ -80,7 +81,7 @@ contract WitnetBridgeInterface {
   function report_dr_inclusion (uint256 id, bytes memory poi, uint256 block_hash) public {
     if (requests[id].dr_hash == 0){
       if (verify_poi(poi)){
-        // This should be equal to tx_hash, derived from sha256(dr, dr_rest) (PoI[0])
+        //TODO: This should be equal to tx_hash, derived from sha256(dr, dr_rest) (PoI[0])
         requests[id].dr_hash = block_hash;
         requests[id].pkh_claim.transfer(requests[id].inclusion_reward);
       }
@@ -117,9 +118,12 @@ contract WitnetBridgeInterface {
     return requests[id].result;
   }
 
+  // TODO: Fill me
   function verify_poe(bytes memory poe) internal pure returns(bool){
     return true;
   }
+
+  // TODO: Fill me
   function verify_poi(bytes memory poi) internal pure returns(bool){
     return true;
   }
