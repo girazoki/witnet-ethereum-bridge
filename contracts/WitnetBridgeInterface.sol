@@ -3,8 +3,7 @@ pragma solidity ^0.5.0;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "vrf-solidity/contracts/VRF.sol";
 import "./ActiveBridgeSetLib.sol";
-import "./BlockRelayInterface.sol";
-
+import "block-relay/contracts/BlockRelayProxy.sol";
 
 /**
  * @title Witnet Bridge Interface
@@ -28,7 +27,7 @@ contract WitnetBridgeInterface {
     address payable pkhClaim;
   }
 
-  BlockRelayInterface blockRelay;
+  BlockRelayProxy blockRelay;
 
   DataRequest[] public requests;
 
@@ -109,7 +108,7 @@ contract WitnetBridgeInterface {
   }
 
   constructor (address _blockRelayAddress, uint8 _repFactor) public {
-    blockRelay = BlockRelayInterface(_blockRelayAddress);
+    blockRelay = BlockRelayProxy(_blockRelayAddress);
 
     // Insert an empty request so as to initialize the requests array with length > 0
     DataRequest memory request;

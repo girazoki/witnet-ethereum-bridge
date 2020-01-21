@@ -1,16 +1,22 @@
 const WBITestHelper = artifacts.require("WBITestHelper")
 const WBI = artifacts.require("WitnetBridgeInterface")
+const BlockRelayProxy = artifacts.require("BlockRelayProxy")
 const BlockRelay = artifacts.require("BlockRelay")
 const testdata = require("./internals.json")
 
 contract("WBITestHelper - internals", accounts => {
   describe("WBI underlying algorithms: ", () => {
     let wbiInstance
+    let blockRelayProxy
     let blockRelay
     let wbiHelper
     before(async () => {
-      blockRelay = await BlockRelay.deployed()
-      wbiInstance = await WBI.new(blockRelay.address, 2)
+      blockRelayProxy = await BlockRelayProxy.new({ from: accounts[0] })
+      blockRelay = await BlockRelay.new({ from: accounts[0] })
+      await blockRelayProxy.UpgradeBlockRelay(blockRelay.address, {
+        from: accounts[0],
+      })
+      wbiInstance = await WBI.new(blockRelayProxy.address, 2)
       wbiHelper = await WBITestHelper.new(wbiInstance.address, 2)
     })
     for (const [index, test] of testdata.poi.valid.entries()) {

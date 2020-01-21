@@ -1,5 +1,7 @@
 const WBI = artifacts.require("WitnetBridgeInterface")
+const BlockRelayProxy = artifacts.require("BlockRelayProxy")
 const BlockRelay = artifacts.require("BlockRelay")
+
 const truffleAssert = require("truffle-assertions")
 const sha = require("js-sha256")
 
@@ -25,10 +27,16 @@ function calculateRoots (drBytes, resBytes) {
 contract("WBI", accounts => {
   describe("WBI test suite", () => {
     let wbiInstance
+    let blockRelayProxy
     let blockRelay
+    console.log("sadsas")
     beforeEach(async () => {
-      blockRelay = await BlockRelay.new()
-      wbiInstance = await WBI.new(blockRelay.address, 2)
+      blockRelayProxy = await BlockRelayProxy.new({ from: accounts[0] })
+      blockRelay = await BlockRelay.new({ from: accounts[0] })
+      await blockRelayProxy.UpgradeBlockRelay(blockRelay.address, {
+        from: accounts[0],
+      })
+      wbiInstance = await WBI.new(blockRelayProxy.address, 2)
     })
 
     it("should post 2 data requests, read them successfully and check balances afterwards", async () => {
