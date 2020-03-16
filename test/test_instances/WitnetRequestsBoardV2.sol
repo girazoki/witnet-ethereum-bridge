@@ -98,7 +98,7 @@ contract WitnetRequestsBoardV2 is WitnetRequestsBoardInterface {
   /// @param _id The unique identifier of the data request.
   /// @return The result of the DR
   function readResult (uint256 _id) external view returns(bytes memory) {
-    return requests[_id].result;
+    return "testInstanceV2";
   }
 
    /// @dev Verifies if the contract is upgradable

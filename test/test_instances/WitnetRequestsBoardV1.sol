@@ -94,6 +94,14 @@ contract WitnetRequestsBoardV1 is WitnetRequestsBoardInterface {
     requests[_id].tallyReward += _tallyReward;
   }
 
+  /// @dev Posts the result of a DR Id.
+  /// @param _id The unique identifier of the data request.
+  /// @param _result The result of the DR Id.
+
+  function postResult (uint256 _id, bytes calldata _result) external {
+    requests[_id].result = _result;
+  }
+
   /// @dev Retrieves the result (if already available) of one data request from the WRB.
   /// @param _id The unique identifier of the data request.
   /// @return The result of the DR

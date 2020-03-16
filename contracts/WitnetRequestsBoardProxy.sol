@@ -19,6 +19,7 @@ contract WitnetRequestsBoardProxy {
   mapping(uint256 => address)  idWrb;
   uint256[] lastIds;
 
+  event controllerget(uint256, address);
   modifier notIdentical(address _newAddress) {
     require(_newAddress != witnetRequestsBoardAddress, "The provided Witnet Requests Board instance address is already in use");
     _;
@@ -38,8 +39,8 @@ contract WitnetRequestsBoardProxy {
     payable
     returns(uint256)
   {
-    lastDrId = witnetRequestsBoardInstance.postDataRequest(_dr, _tallyReward);
-    return witnetRequestsBoardInstance.postDataRequest(_dr, _tallyReward);
+    currId = witnetRequestsBoardInstance.postDataRequest(_dr, _tallyReward);
+    return lastDrId + currId;
   }
 
   /// @dev Increments the rewards of a data request by adding more value to it. The new request reward will be increased by msg.value minus the difference between the former tally reward and the new tally reward.
@@ -49,7 +50,7 @@ contract WitnetRequestsBoardProxy {
     external
     payable
   {
-    return witnetRequestsBoardInstance.upgradeDataRequest(_id, _tallyReward);
+    return witnetRequestsBoardInstance.upgradeDataRequest(_id - lastDrId, _tallyReward);
   }
 
   /// @dev Retrieves the result (if already available) of one data request from the WRB.
@@ -57,35 +58,41 @@ contract WitnetRequestsBoardProxy {
   /// @return The result of the DR
   function readResult (uint256 _id)
     external
-    view
     returns(bytes memory)
-  {
-    uint256 n = lastIds.length;
-    if (_id > lastIds[n]) {
-      return witnetRequestsBoardInstance.readResult(_id);
+    {
+    address (controller, offset) = getController(_id);
+    emit controllerget(_id, controller);
+    if (witnetRequestsBoardAddress == controller) {
+      return witnetRequestsBoardInstance.readResult(_id-offset);
+    } else {
+      return WitnetRequestsBoardInterface(controller).readResult(_id-offset);
     }
-
-    else {
-      for (uint i = 0; i <= n - 1; i++) {
-        if (_id > lastIds[n - 1 - i]){
-          WitnetRequestsBoardInterface wrbWithResult;
-          wrbWithResult = WitnetRequestsBoardInterface(idWrb[lastIds[n - 1 - i]]);
-        } else{
-          continue;
-        }
-      }
-    }
-    return witnetRequestsBoardInstance.readResult(_id);
-  }
 
   /// @notice Upgrades the Witnet Requests Board if the current one is upgradeable
   /// @param _newAddress address of the new block relay to upgrade
   function upgradeWitnetRequestsBoard(address _newAddress) public notIdentical(_newAddress) {
+  }
     require(witnetRequestsBoardInstance.isUpgradable(msg.sender), "The upgrade has been rejected by the current implementation");
+
+    currId = witnetRequestsBoardAddress.requests().length;
+    lastDrId = lastDrId + currId;
     idWrb[lastDrId] = witnetRequestsBoardAddress;
     lastIds.push(lastDrId);
     witnetRequestsBoardAddress = _newAddress;
     witnetRequestsBoardInstance = WitnetRequestsBoardInterface(_newAddress);
   }
 
+  /// @notice Gets the controller associated with the WBR controller corresponding to the Id provided
+  /// @param _id the Id that to work with
+  function getController(uint256 _id) public view returns(address _controller, uint256 offset) {
+    uint256 n = lastIds.length;
+    if (lastIds.length == 0 || _id > lastIds[n-1]) {
+      return (witnetRequestsBoardAddress, lastDrId);
+    }
+    for (uint i = 0; i < n; i++) {
+      if (_id > lastIds[n-2-i]) {
+        return (idWrb[lastIds[n - 2 - i]], lastIds[n - 2 - i]);
+      }
+    }
+  }
 }
