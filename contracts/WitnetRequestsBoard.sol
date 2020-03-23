@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.6.4;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "vrf-solidity/contracts/VRF.sol";
@@ -11,7 +11,7 @@ import "./WitnetRequestsBoardInterface.sol";
  * @title Witnet Requests Board
  * @notice Contract to bridge requests to Witnet
  * @dev This contract enables posting requests that Witnet bridges will insert into the Witnet network
-  * The result of the requests will be posted back to this contract by the bridge nodes too.
+ * The result of the requests will be posted back to this contract by the bridge nodes too.
  * @author Witnet Foundation
  */
 contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
@@ -98,7 +98,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     uint256[4] memory _poe,
     uint256[2] memory _publicKey,
     uint256[2] memory _uPoint,
-    uint256[4] memory _vPointHelpers) {
+    uint256[4] memory _vPointHelpers) virtual {
     require(
       VRF.fastVerify(
         _publicKey,
@@ -127,6 +127,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     external
     payable
     payingEnough(msg.value, _tallyReward)
+    override
     returns(uint256)
   {
     uint256 _id = requests.length;
@@ -151,6 +152,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     external
     payable
     payingEnough(msg.value, _tallyReward)
+    override
   {
     requests[_id].inclusionReward += msg.value - _tallyReward;
     requests[_id].tallyReward += _tallyReward;
@@ -160,8 +162,9 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
   /// @param _ids The list of data request identifiers to be checked.
   /// @return An array of booleans indicating if data request are claimable or not.
   function checkDataRequestsClaimability(uint256[] calldata _ids) external view returns (bool[] memory) {
-    bool[] memory validIds = new bool[](_ids.length);
-    for (uint i = 0; i < _ids.length; i++) {
+    uint256 idsLength = _ids.length;
+    bool[] memory validIds = new bool[](idsLength);
+    for (uint i = 0; i < idsLength; i++) {
       uint256 index = _ids[i];
       validIds[i] = (requests[index].timestamp == 0 || block.number - requests[index].timestamp > 13) &&
         requests[index].drHash == 0 &&
@@ -252,7 +255,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
   /// @dev Retrieves the result (if already available) of one data request from the WRB.
   /// @param _id The unique identifier of the data request.
   /// @return The result of the DR
-  function readResult (uint256 _id) external view returns(bytes memory) {
+  function readResult (uint256 _id) external view override returns(bytes memory) {
     return requests[_id].result;
   }
 
@@ -350,11 +353,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
 
   /// @dev Read the beacon of the last block inserted
   /// @return bytes to be signed by the node as PoE
-  function getLastBeacon()
-    public
-    view
-  returns(bytes memory)
-  {
+  function getLastBeacon() public view virtual returns(bytes memory) {
     return blockRelay.getLastBeacon();
   }
 

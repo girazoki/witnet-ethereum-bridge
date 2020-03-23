@@ -32,9 +32,9 @@
   ],
   "license": "GPL-3.0",
   "dependencies": {
-    "witnet-ethereum-block-relay": "witnet/witnet-ethereum-block-relay#master",
-    "openzeppelin-solidity": "2.4.0",
-    "vrf-solidity": "^0.2.1"
+    "witnet-ethereum-block-relay": "girazoki/witnet-ethereum-block-relay#chore/version",
+    "openzeppelin-solidity": "OpenZeppelin/openzeppelin-contracts#release-v3.0.0",
+    "vrf-solidity": "girazoki/vrf-solidity#chore/versions"
   },
   "devDependencies": {
     "dotenv": "^8.1.0",

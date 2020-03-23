@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.6.4;
 
 import "../../contracts/WitnetRequestsBoard.sol";
 
@@ -19,16 +19,16 @@ contract WitnetRequestsBoardTestHelper is WitnetRequestsBoard {
   uint256 blockHash;
   uint256 epoch;
 
-  constructor (
+  constructor(
     address _blockRelayAddress,
     uint8 _repFactor)
   WitnetRequestsBoard(_blockRelayAddress, _repFactor) public { }
 
-  modifier vrfValid(
+  modifier vrfValid (
     uint256[4] memory _poe,
     uint256[2] memory _publicKey,
     uint256[2] memory _uPoint,
-    uint256[4] memory _vPointHelpers) {
+    uint256[4] memory _vPointHelpers) override {
     require(
       true,
       "Not a valid VRF");
@@ -62,11 +62,7 @@ contract WitnetRequestsBoardTestHelper is WitnetRequestsBoard {
       _addrSignature);
   }
 
-  function getLastBeacon()
-    public
-    view
-  returns(bytes memory)
-  {
+  function getLastBeacon() public view override returns(bytes memory) {
     return abi.encodePacked(blockHash, epoch);
   }
 

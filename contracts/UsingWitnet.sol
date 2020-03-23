@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity >=0.5.3 <0.7.0;
 
 import "./Request.sol";
 import "./Witnet.sol";
@@ -38,7 +38,7 @@ contract UsingWitnet {
   * @param _resultReward Reward specified for the user which posts back the request result
   * @return Sequencial identifier for the request included in the WitnetRequestsBoard
   */
-  function witnetPostRequest(Request _request, uint256 _requestReward, uint256 _resultReward) internal returns (uint256 id) {
+  function witnetPostRequest(Request _request, uint256 _requestReward, uint256 _resultReward) internal returns (uint256) {
     return wrb.postDataRequest.value(_requestReward + _resultReward)(_request.bytecode(), _resultReward);
   }
 

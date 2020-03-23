@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.6.4;
 
 import "../WitnetRequestsBoardInterface.sol";
 
@@ -37,6 +37,7 @@ contract MockWitnetRequestsBoard is WitnetRequestsBoardInterface {
   function postDataRequest(bytes calldata _dr, uint256 _tallyReward)
     external
     payable
+    override
     returns(uint256)
   {
     uint256 _id = requests.length;
@@ -55,6 +56,7 @@ contract MockWitnetRequestsBoard is WitnetRequestsBoardInterface {
   function upgradeDataRequest(uint256 _id, uint256 _tallyReward)
     external
     payable
+    override
   {
     requests[_id].inclusionReward += msg.value - _tallyReward;
     requests[_id].tallyReward += _tallyReward;
@@ -76,7 +78,7 @@ contract MockWitnetRequestsBoard is WitnetRequestsBoardInterface {
   /// @dev Retrieves the result (if already available) of one data request from the WRB.
   /// @param _id The unique identifier of the data request.
   /// @return The result of the DR.
-  function readResult (uint256 _id) external view returns(bytes memory) {
+  function readResult (uint256 _id) external view override returns(bytes memory) {
     return requests[_id].result;
   }
 

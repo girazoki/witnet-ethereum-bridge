@@ -1,13 +1,13 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.6.4;
+
 import "witnet-ethereum-block-relay/contracts/BlockRelayInterface.sol";
+
 
 /**
  * @title Block relay contract
  * @notice Contract to store/read block headers from the Witnet network
  * @author Witnet Foundation
  */
-
-
 contract MockBlockRelay is BlockRelayInterface {
 
   struct MerkleRoots {
@@ -62,6 +62,7 @@ contract MockBlockRelay is BlockRelayInterface {
   function getLastBeacon()
     external
     view
+    override
   returns(bytes memory)
   {
     return abi.encodePacked(lastBlock.blockHash, lastBlock.epoch);
@@ -69,13 +70,13 @@ contract MockBlockRelay is BlockRelayInterface {
 
   /// @notice Returns the lastest epoch reported to the block relay.
   /// @return epoch
-  function getLastEpoch() external view returns(uint256) {
+  function getLastEpoch() external view override returns(uint256) {
     return lastBlock.epoch;
   }
 
   /// @notice Returns the latest hash reported to the block relay
   /// @return blockhash
-  function getLastHash() external view returns(uint256) {
+  function getLastHash() external view override returns(uint256) {
     return lastBlock.blockHash;
   }
 
@@ -93,6 +94,7 @@ contract MockBlockRelay is BlockRelayInterface {
   external
   view
   blockExists(_blockHash)
+  override
   returns(bool)
   {
     uint256 drMerkleRoot = blocks[_blockHash].drHashMerkleRoot;
@@ -117,6 +119,7 @@ contract MockBlockRelay is BlockRelayInterface {
   external
   view
   blockExists(_blockHash)
+  override
   returns(bool)
   {
     uint256 tallyMerkleRoot = blocks[_blockHash].tallyHashMerkleRoot;
@@ -129,7 +132,7 @@ contract MockBlockRelay is BlockRelayInterface {
 
   /// @dev Determines if the contract is upgradable
   /// @return true
-  function isUpgradable(address _address) external view returns(bool) {
+  function isUpgradable(address _address) external view override returns(bool) {
     return true;
   }
 
@@ -162,9 +165,9 @@ contract MockBlockRelay is BlockRelayInterface {
     public
     view
     blockExists(_blockHash)
-  returns(uint256 drMerkleRoot)
-    {
-    drMerkleRoot = blocks[_blockHash].drHashMerkleRoot;
+  returns(uint256)
+  {
+    return blocks[_blockHash].drHashMerkleRoot;
   }
 
   /// @dev Retrieve the tallies-only merkle root hash that was reported for a specific block header.
@@ -174,9 +177,9 @@ contract MockBlockRelay is BlockRelayInterface {
     public
     view
     blockExists(_blockHash)
-  returns(uint256 tallyMerkleRoot)
+  returns(uint256)
   {
-    tallyMerkleRoot = blocks[_blockHash].tallyHashMerkleRoot;
+    return blocks[_blockHash].tallyHashMerkleRoot;
   }
 
   /// @dev Verifies the validity of a PoI
