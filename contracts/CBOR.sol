@@ -236,7 +236,7 @@ library CBOR {
       }
     }
 
-    require(majorType >= 0 && majorType <= 7, "Invalid CBOR major type");
+    require(majorType <= 7, "Invalid CBOR major type");
 
     return CBOR.Value(
       _buffer,

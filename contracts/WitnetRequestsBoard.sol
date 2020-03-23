@@ -192,20 +192,18 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
  {
     uint256 drOutputHash = uint256(sha256(requests[_id].dr));
     uint256 drHash = uint256(sha256(abi.encodePacked(drOutputHash, _poi[0])));
-    if (blockRelay.verifyDrPoi(
+    require(
+      blockRelay.verifyDrPoi(
       _poi,
       _blockHash,
       _epoch,
       _index,
-      drOutputHash)) {
-      requests[_id].drHash = drHash;
-      requests[_id].pkhClaim.transfer(requests[_id].inclusionReward);
-      // Push requests[_id].pkhClaim to abs
-      abs.pushActivity(requests[_id].pkhClaim, block.number);
-      emit IncludedRequest(msg.sender, _id);
-    } else {
-      revert("Invalid PoI");
-    }
+      drOutputHash), "Invalid PoI");
+    requests[_id].drHash = drHash;
+    requests[_id].pkhClaim.transfer(requests[_id].inclusionReward);
+    // Push requests[_id].pkhClaim to abs
+    abs.pushActivity(requests[_id].pkhClaim, block.number);
+    emit IncludedRequest(msg.sender, _id);
   }
 
   /// @dev Reports the result of a data request in Witnet.
@@ -229,20 +227,18 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
  {
     // this should leave it ready for PoI
     uint256 resHash = uint256(sha256(abi.encodePacked(requests[_id].drHash, _result)));
-    if (blockRelay.verifyTallyPoi(
+    require(
+      blockRelay.verifyTallyPoi(
       _poi,
       _blockHash,
       _epoch,
       _index,
-      resHash)){
-      requests[_id].result = _result;
-      msg.sender.transfer(requests[_id].tallyReward);
+      resHash), "Invalid PoI");
+    requests[_id].result = _result;
+    msg.sender.transfer(requests[_id].tallyReward);
       // Push msg.sender to abs
-      abs.pushActivity(msg.sender, block.number);
-      emit PostedResult(msg.sender, _id);
-    } else {
-      revert("Invalid PoI");
-    }
+    abs.pushActivity(msg.sender, block.number);
+    emit PostedResult(msg.sender, _id);
   }
 
   /// @dev Retrieves the bytes of the serialization of one data request from the WRB.
@@ -339,21 +335,23 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     returns(bool)
   {
     for (uint i = 0; i < _ids.length; i++) {
-      if ((requests[_ids[i]].timestamp == 0 || block.number - requests[_ids[i]].timestamp > 13) &&
-      requests[_ids[i]].drHash == 0 &&
-      requests[_ids[i]].result.length == 0) {
-        requests[_ids[i]].pkhClaim = msg.sender;
-        requests[_ids[i]].timestamp = block.number;
-      } else {
-        revert("One of the listed data requests was already claimed");
-      }
+      require(
+        (requests[_ids[i]].timestamp == 0 ||
+         block.number - requests[_ids[i]].timestamp > 13
+         ) &&
+         requests[_ids[i]].drHash == 0 &&
+         requests[_ids[i]].result.length == 0,
+        "One of the listed data requests was already claimed");
+      requests[_ids[i]].pkhClaim = msg.sender;
+      requests[_ids[i]].timestamp = block.number;
     }
     return true;
   }
 
   /// @dev Read the beacon of the last block inserted
   /// @return bytes to be signed by the node as PoE
-  function getLastBeacon() public view virtual returns(bytes memory) {
+  function getLastBeacon() public view virtual returns(bytes memory)
+  {
     return blockRelay.getLastBeacon();
   }
 
