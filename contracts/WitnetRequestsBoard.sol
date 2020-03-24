@@ -157,7 +157,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     override
   {
     requests[_id].inclusionReward = SafeMath.add(requests[_id].inclusionReward, SafeMath.sub(msg.value, _tallyReward));
-    requests[_id].tallyReward += SafeMath.add(requests[_id].tallyReward, _tallyReward);
+    requests[_id].tallyReward = SafeMath.add(requests[_id].tallyReward, _tallyReward);
   }
 
   /// @dev Checks if the data requests from a list are claimable or not.
