@@ -13,7 +13,7 @@ import "./WitnetRequestsBoard.sol";
 contract UsingWitnet {
   using Witnet for Witnet.Result;
 
-  WitnetRequestsBoard wrb;
+  WitnetRequestsBoard private wrb;
 
   /**
   * @notice Include an address to specify the WitnetRequestsBoard

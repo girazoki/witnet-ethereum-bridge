@@ -10,7 +10,7 @@ import "./WitnetRequestsBoard.sol";
  */
 contract UsingWitnetBytes {
 
-  WitnetRequestsBoard wrb;
+  WitnetRequestsBoard private wrb;
 
   /**
   * @notice Include an address to specify the WitnetRequestsBoard

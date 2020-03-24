@@ -16,7 +16,9 @@ import "./WitnetRequestsBoardInterface.sol";
  */
 contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
 
-  using SafeMath for uint256;
+  uint256 public constant CLAIM_EXPIRATION = 13;
+
+  // using SafeMath for uint256;
   using ActiveBridgeSetLib for ActiveBridgeSetLib.ActiveBridgeSet;
 
   struct DataRequest {
@@ -29,14 +31,14 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     address payable pkhClaim;
   }
 
-  BlockRelayProxy blockRelay;
+  BlockRelayProxy public blockRelay;
 
   DataRequest[] public requests;
 
-  ActiveBridgeSetLib.ActiveBridgeSet abs;
+  ActiveBridgeSetLib.ActiveBridgeSet public abs;
 
   // Replication factor for Active Bridge Set identities
-  uint8 repFactor;
+  uint8 public repFactor;
 
   // Event emitted when a new DR is posted
   event PostedRequest(address indexed _from, uint256 _id);
@@ -135,7 +137,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     requests.push(dr);
 
     requests[_id].dr = _dr;
-    requests[_id].inclusionReward = msg.value - _tallyReward;
+    requests[_id].inclusionReward = SafeMath.sub(msg.value, _tallyReward);
     requests[_id].tallyReward = _tallyReward;
     requests[_id].result = "";
     requests[_id].timestamp = 0;
@@ -154,8 +156,8 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     payingEnough(msg.value, _tallyReward)
     override
   {
-    requests[_id].inclusionReward += msg.value - _tallyReward;
-    requests[_id].tallyReward += _tallyReward;
+    requests[_id].inclusionReward = SafeMath.add(requests[_id].inclusionReward, SafeMath.sub(msg.value, _tallyReward));
+    requests[_id].tallyReward += SafeMath.add(requests[_id].tallyReward, _tallyReward);
   }
 
   /// @dev Checks if the data requests from a list are claimable or not.
@@ -166,7 +168,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
     bool[] memory validIds = new bool[](idsLength);
     for (uint i = 0; i < idsLength; i++) {
       uint256 index = _ids[i];
-      validIds[i] = (requests[index].timestamp == 0 || block.number - requests[index].timestamp > 13) &&
+      validIds[i] = (requests[index].timestamp == 0 || block.number - requests[index].timestamp > CLAIM_EXPIRATION) &&
         requests[index].drHash == 0 &&
         requests[index].result.length == 0;
     }
@@ -336,12 +338,9 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
   {
     for (uint i = 0; i < _ids.length; i++) {
       require(
-        (requests[_ids[i]].timestamp == 0 ||
-         block.number - requests[_ids[i]].timestamp > 13
-         ) &&
-         requests[_ids[i]].drHash == 0 &&
-         requests[_ids[i]].result.length == 0,
-        "One of the listed data requests was already claimed");
+        dataRequestCanBeClaimed(requests[_ids[i]]),
+        "One of the listed data requests was already claimed"
+      );
       requests[_ids[i]].pkhClaim = msg.sender;
       requests[_ids[i]].timestamp = block.number;
     }
@@ -350,8 +349,7 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
 
   /// @dev Read the beacon of the last block inserted
   /// @return bytes to be signed by the node as PoE
-  function getLastBeacon() public view virtual returns(bytes memory)
-  {
+  function getLastBeacon() public view virtual returns(bytes memory) {
     return blockRelay.getLastBeacon();
   }
 
@@ -418,4 +416,12 @@ contract WitnetRequestsBoard is WitnetRequestsBoardInterface {
       r,
       s) == hashedKey;
   }
+
+  function dataRequestCanBeClaimed(DataRequest memory _request) private returns (bool) {
+    return
+      (_request.timestamp == 0 || block.number - _request.timestamp > CLAIM_EXPIRATION) &&
+      _request.drHash == 0 &&
+      _request.result.length == 0;
+  }
+
 }

@@ -22,7 +22,7 @@ contract MockWitnetRequestsBoard is WitnetRequestsBoardInterface {
     address payable pkhClaim;
   }
 
-  DataRequest[] requests;
+  DataRequest[] public requests;
 
   constructor () public {
     // Insert an empty request so as to initialize the requests array with length > 0

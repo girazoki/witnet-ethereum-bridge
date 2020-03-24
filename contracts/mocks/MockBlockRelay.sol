@@ -25,7 +25,7 @@ contract MockBlockRelay is BlockRelayInterface {
   }
 
   // Address of the block pusher
-  address witnet;
+  address public witnet;
   // Last block reported
   Beacon public lastBlock;
 
@@ -146,7 +146,7 @@ contract MockBlockRelay is BlockRelayInterface {
     uint256 _epoch,
     uint256 _drMerkleRoot,
     uint256 _tallyMerkleRoot)
-    public
+    external
     isOwner
     blockDoesNotExist(_blockHash)
   {
@@ -162,7 +162,7 @@ contract MockBlockRelay is BlockRelayInterface {
   /// @param _blockHash Hash of the block header
   /// @return Requests-only merkle root hash in the block header.
   function readDrMerkleRoot(uint256 _blockHash)
-    public
+    external
     view
     blockExists(_blockHash)
   returns(uint256)
@@ -174,7 +174,7 @@ contract MockBlockRelay is BlockRelayInterface {
   /// @param _blockHash Hash of the block header
   /// tallies-only merkle root hash in the block header.
   function readTallyMerkleRoot(uint256 _blockHash)
-    public
+    external
     view
     blockExists(_blockHash)
   returns(uint256)
